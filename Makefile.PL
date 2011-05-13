@@ -5,6 +5,8 @@ WriteMakefile
   'NAME' => 'Test::Builder::Clutch',
   'VERSION_FROM' => 'lib/Test/Builder/Clutch.pm',
   'PREREQ_PM' => {
+                   'Class::MOP' => 0,
+                   'Test::Builder' => '0.98',
                    'Test::More' => 0
                  },
   'INSTALLDIRS' => 'site',

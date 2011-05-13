@@ -1,12 +1,15 @@
 ---
 name: Test-Builder-Clutch
-version: 0.02
+version: 0.03
 author:
   - 'Fraser Tweedale <frase@frase.id.au>'
 abstract: add a clutch to your testing drivechain
 license: perl
 build_requires:
   Test::More: 0
+requires:
+  Class::MOP: 0
+  Test::Builder: 0.98
 configure_requires:
   Module::Build: 0.340201
 generated_by: Module::Build version 0.340201
@@ -16,6 +19,6 @@ meta-spec:
 provides:
   Test::Builder::Clutch:
     file: lib/Test/Builder/Clutch.pm
-    version: 0.02
+    version: 0.03
 resources:
   license: http://dev.perl.org/licenses/

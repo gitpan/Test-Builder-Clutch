@@ -10,8 +10,13 @@ my $builder = Module::Build->new(
     build_requires => {
         'Test::More' => 0,
     },
+    requires => {
+        'Test::Builder' => '0.98',
+        'Class::MOP' => 0
+    },
     add_to_cleanup      => [ 'Test-Builder-Clutch-*' ],
     create_makefile_pl => 'traditional',
 );
 
 $builder->create_build_script();
+foo
