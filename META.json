@@ -1,0 +1,47 @@
+{
+   "abstract" : "add a clutch to your testing drivechain",
+   "author" : [
+      "Fraser Tweedale <frase@frase.id.au>"
+   ],
+   "dynamic_config" : 1,
+   "generated_by" : "Module::Build version 0.4, CPAN::Meta::Converter version 2.120921",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "Test-Builder-Clutch",
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "Test::More" : "0"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "Module::Build" : "0.4"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Class::MOP" : "0",
+            "Test::Builder" : "0.98"
+         }
+      }
+   },
+   "provides" : {
+      "Test::Builder::Clutch" : {
+         "file" : "lib/Test/Builder/Clutch.pm",
+         "version" : "0.05"
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "license" : [
+         "http://dev.perl.org/licenses/"
+      ]
+   },
+   "version" : "0.05"
+}

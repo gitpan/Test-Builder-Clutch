@@ -1,5 +1,8 @@
 Revision history for Test-Builder-Clutch
 
+0.05    20120908
+        Add antitest method.
+
 0.04    20110517
         Remove bogus line from Build.PL
 

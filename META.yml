@@ -5,8 +5,9 @@ author:
 build_requires:
   Test::More: 0
 configure_requires:
-  Module::Build: 0.36
-generated_by: 'Module::Build version 0.3624'
+  Module::Build: 0.4
+dynamic_config: 1
+generated_by: 'Module::Build version 0.4, CPAN::Meta::Converter version 2.120921'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -15,10 +16,10 @@ name: Test-Builder-Clutch
 provides:
   Test::Builder::Clutch:
     file: lib/Test/Builder/Clutch.pm
-    version: 0.04
+    version: 0.05
 requires:
   Class::MOP: 0
   Test::Builder: 0.98
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.04
+version: 0.05

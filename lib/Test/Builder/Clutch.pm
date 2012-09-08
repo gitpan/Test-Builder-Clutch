@@ -9,11 +9,11 @@ Test::Builder::Clutch - add a clutch to your testing drivechain
 
 =head1 VERSION
 
-Version 0.04
+Version 0.05
 
 =cut
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 
 =head1 SYNOPSIS
@@ -30,18 +30,24 @@ our $VERSION = '0.04';
    Test::Builder::Clutch::engaged ? 'yes' : 'no';
    Test::Builder::Clutch::disengaged ? 'no' : 'yes';
 
+   # metaprogram non-test "foo" from "foo_ok"
+   Test::Builder::Clutch::antitest qw/foo_ok/;
+
+   # metaprogram non-test "is_bar" from "bar_ok"
+   Test::Builder::Clutch::antitest { 'bar_ok' => 'is_bar' };
+
 
 =head1 DESCRIPTION
 
-There are many cases where you have a procedure that you might sometimes
-want to run in a test-like fashion, and other times just run.  Rather than
-having two subroutines, one that emits tests and one that doesn't, doesn't
-it make more sense to install a clutch?
+Perhaps you have a test that does some useful work in its own right,
+but you don't want to see all the test output when it's used outside
+a testing context.  Rather than writing two subroutines - one that
+emits TAP and one that doesn't - you can install
+C<Test::Builder::Clutch> to turn the TAP on and off at will.
 
-C<Test::Builder::Clutch> installs a clutch in L<Test::Builder>.  Since
-C<Test::Builder> is the base class for a great many test modules, and
-since it's singleton-ish, you have a single interface (most of the time)
-for engaging and disengaging test output.
+Routines are provided for engaging, disengaging in querying the state
+of the clutch, and for metaprogramming non-test variants of test
+routines..
 
 =cut
 
@@ -142,10 +148,10 @@ $meta->add_around_method_modifier('child', sub {
 
 =head2   is_passing
 
-If the clutch is currently engaged, simply defers to the original method.
-If the clutch is disengaged, the test is considered to be passing only if
-the original method returns true, and we have also not failed any tests
-and any point while the clutch was disengaged.
+If the clutch is currently engaged, defer to the original method.
+If the clutch is disengaged, the test is considered to be passing
+only if the original method returns true and no tests failed while
+the clutch was disengaged.
 
 =cut
 
@@ -199,9 +205,54 @@ Enable test output.
 sub engage { Test::Builder->new->engage }
 
 
+=head2   antitest
+
+Metaprogram non-test versions of test methods in the calling
+package.
+
+The argument is a list of strings and hash references.  Simple
+strings must refer to an existing method whose name ends with "_ok".
+The non-test methods' names will have the "_ok" stripped.
+
+Hashref arguments give test method names as keys, and the desired
+names of the corresponding non-test methods as values.
+
+If the resultant non-test methods are called from within the
+pacakge, the C<antitest> call must be executed in a C<BEGIN> block.
+
+=cut
+
+sub antitest {
+	my $meta = Class::MOP::Class->initialize(scalar caller);
+	for my $spec (@_) {
+		if (ref $spec eq 'HASH') {
+			while (my ($source, $target) = each %$spec) {
+				_antitest($meta, $source, $target);
+			}
+		}
+		else {
+			my $target = $spec;
+			$target =~ s/_ok$//;
+			_antitest($meta, $spec, $target);
+		}
+	}
+}
+
+sub _antitest {
+	my ($meta, $source, $target) = @_;
+	$meta->add_method($target => sub {
+		my $engaged = Test::Builder::Clutch::engaged;
+		Test::Builder::Clutch::disengage;
+		my $result = $meta->get_method($source)->body->(@_);
+		Test::Builder::Clutch::engage if $engaged;
+		$result;
+	});
+}
+
+
 =head1 AUTHOR
 
-Fraser Tweedale, C<< <frasert at jumbolotteries.com> >>
+Fraser Tweedale, C<< <frase at frase.id.au> >>
 
 
 =head1 BUGS
@@ -253,6 +304,7 @@ possible.
 =head1 LICENSE AND COPYRIGHT
 
 Copyright 2011 Benon Technologies Pty Ltd
+Copyright 2012 Fraser Tweedale
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
