@@ -1,8 +1,3 @@
-package Test::Builder::Clutch;
-
-use warnings;
-use strict;
-
 =head1 NAME
 
 Test::Builder::Clutch - add a clutch to your testing drivechain
@@ -10,11 +5,6 @@ Test::Builder::Clutch - add a clutch to your testing drivechain
 =head1 VERSION
 
 Version 0.06
-
-=cut
-
-our $VERSION = '0.06';
-
 
 =head1 SYNOPSIS
 
@@ -49,15 +39,6 @@ Routines are provided for engaging, disengaging in querying the state
 of the clutch, and for metaprogramming non-test variants of test
 routines..
 
-=cut
-
-use Class::MOP;
-use Class::MOP::Class;
-use Test::Builder;
-
-my $meta = Class::MOP::Class->initialize('Test::Builder');
-
-
 =head1 L<Test::Builder> augmentations
 
 C<Test::Builder::Clutch> adds an attribute named C<disengaged> to
@@ -75,76 +56,15 @@ enabled when C<Test::Builder::Clutch> is loaded.
    $Test->disengage;  # suspend test output
    $Test->engage;     # enable test output
 
-=cut
-
-$meta->add_attribute('failed_while_disengaged' => (
-		accessor => 'failed_while_disengaged'
-));
-$meta->add_attribute('disengaged' => (accessor => 'disengaged'));
-$meta->add_method('disengage', sub { shift->disengaged(1) });
-$meta->add_method('engage', sub { shift->disengaged(undef) });
-
-
-# simple methods that return 1 on success
-foreach (qw/plan done_testing/) {
-	$meta->add_around_method_modifier($_, sub {
-		my $orig = shift;
-		my $self = shift;
-
-		return 1 if $self->disengaged;
-		return $self->$orig(@_);
-	});
-}
-
-# simple methods that return 0 on success
-foreach (qw/_print_comment/) {
-	$meta->add_around_method_modifier($_, sub {
-		my $orig = shift;
-		my $self = shift;
-
-		return 0 if $self->disengaged;
-		return $self->$orig(@_);
-	});
-}
-
-
 =head2   ok
 
 The original ok method is only invoked if the clutch in engaged, but the
 C<is_passing> attribute is still set according the first argument.
 
-=cut
-$meta->add_around_method_modifier('ok', sub {
-	my $orig = shift;
-	my $self = shift;
-
-	if ($self->disengaged) {
-		$self->failed_while_disengaged(1) unless $_[0] || $self->in_todo;
-		return $_[0] ? 1 : 0;
-	}
-	# the MOP modifier adds three stack frames
-	local $Test::Builder::Level = $Test::Builder::Level + 3;
-	return $self->$orig(@_);
-});
-
-
 =head2   child
 
 The child Builder's clutch must be disengaged if the parent (that is, the
 invocant) is disengaged; this wrapper takes care of that.
-
-=cut
-
-$meta->add_around_method_modifier('child', sub {
-	my $orig = shift;
-	my $self = shift;
-	# the MOP modifier adds three stack frames
-	local $Test::Builder::Level = $Test::Builder::Level + 3;
-	my $child = $self->$orig(@_);
-	$child->disengaged($self->disengaged);
-	return $child;
-});
-
 
 =head2   is_passing
 
@@ -153,57 +73,23 @@ If the clutch is disengaged, the test is considered to be passing
 only if the original method returns true and no tests failed while
 the clutch was disengaged.
 
-=cut
-
-$meta->add_around_method_modifier('is_passing', sub {
-	my $orig = shift;
-	my $self = shift;
-	if ($self->disengaged) {
-		return $self->$orig(@_) && !$self->failed_while_disengaged;
-	}
-	else {
-		return $self->$orig(@_);
-	}
-});
-
-
 =head1 SUBROUTINES
 
 =head2   engaged
 
 Return true if the clutch is currently engaged, otherwise false.
 
-=cut
-
-sub engaged { !Test::Builder->new->disengaged }
-
-
 =head2   disengaged
 
 Return true if the clutch is currently disengaged, otherwise false.
-
-=cut
-
-sub disengaged { Test::Builder->new->disengaged }
-
 
 =head2   disengage
 
 Disable test output.
 
-=cut
-
-sub disengage { Test::Builder->new->disengage }
-
-
 =head2   engage
 
 Enable test output.
-
-=cut
-
-sub engage { Test::Builder->new->engage }
-
 
 =head2   antitest
 
@@ -219,36 +105,6 @@ names of the corresponding non-test methods as values.
 
 If the resultant non-test methods are called from within the
 pacakge, the C<antitest> call must be executed in a C<BEGIN> block.
-
-=cut
-
-sub antitest {
-	my $meta = Class::MOP::Class->initialize(scalar caller);
-	for my $spec (@_) {
-		if (ref $spec eq 'HASH') {
-			while (my ($source, $target) = each %$spec) {
-				_antitest($meta, $source, $target);
-			}
-		}
-		else {
-			my $target = $spec;
-			$target =~ s/_ok$//;
-			_antitest($meta, $spec, $target);
-		}
-	}
-}
-
-sub _antitest {
-	my ($meta, $source, $target) = @_;
-	$meta->add_method($target => sub {
-		my $engaged = Test::Builder::Clutch::engaged;
-		Test::Builder::Clutch::disengage;
-		my $result = $meta->get_method($source)->body->(@_);
-		Test::Builder::Clutch::engage if $engaged;
-		$result;
-	});
-}
-
 
 =head1 AUTHOR
 
@@ -313,6 +169,3 @@ by the Free Software Foundation; or the Artistic License.
 See http://dev.perl.org/licenses/ for more information.
 
 
-=cut
-
-1; # End of Test::Builder::Clutch

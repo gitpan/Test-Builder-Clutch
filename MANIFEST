@@ -6,10 +6,10 @@ Makefile.PL
 MANIFEST
 META.json
 META.yml
-README
+README.pod
 t/00-load.t
 t/antitest.t
 t/manifest.t
 t/pod-coverage.t
 t/pod.t
-t/Test::Builder::Clutch.t
+t/Test-Builder-Clutch.t
