@@ -4,7 +4,7 @@ use warnings;
 use Test::More;
 use Test::Builder::Clutch;
 
-plan tests => 26;
+plan tests => 24;
 
 sub even_ok {
 	ok !(shift() % 2);
@@ -36,14 +36,6 @@ sub isref_ok {
 
 sub isnotref_ok {
 	ok ref shift eq '';
-}
-
-sub subtest_ok {
-	subtest 'boring subtest' => sub {
-		plan tests => 2;
-		pass;
-		pass;
-	};
 }
 
 even_ok 4;
@@ -95,7 +87,3 @@ ok isnotref ();
 ok !isnotref {};
 ok negative -1;
 ok !negative 1;
-
-subtest_ok;
-BEGIN { Test::Builder::Clutch::antitest {'subtest_ok' => 'antisubtest' }; }
-ok antisubtest;

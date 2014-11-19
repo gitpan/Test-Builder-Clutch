@@ -9,11 +9,11 @@ Test::Builder::Clutch - add a clutch to your testing drivechain
 
 =head1 VERSION
 
-Version 0.06
+Version 0.07
 
 =cut
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 
 =head1 SYNOPSIS
@@ -54,6 +54,8 @@ routines..
 use Class::MOP;
 use Class::MOP::Class;
 use Test::Builder;
+my $HAVE_TEST_STREAM =
+    eval { require Test::Stream::Tester; Test::Stream::Tester->import };
 
 my $meta = Class::MOP::Class->initialize('Test::Builder');
 
@@ -81,8 +83,25 @@ $meta->add_attribute('failed_while_disengaged' => (
 		accessor => 'failed_while_disengaged'
 ));
 $meta->add_attribute('disengaged' => (accessor => 'disengaged'));
-$meta->add_method('disengage', sub { shift->disengaged(1) });
-$meta->add_method('engage', sub { shift->disengaged(undef) });
+
+if ($HAVE_TEST_STREAM) {
+    $meta->add_method('disengage', sub { shift->disengaged(grab()) });
+    $meta->add_method('engage', sub {
+        my $self = shift;
+        my $events = $self->disengaged->finish();
+        foreach my $event (@$events) {
+            if ($event->isa('Test::Stream::Event::Ok') && !$event->real_bool) {
+                $self->failed_while_disengaged(1);
+                last;
+            }
+        }
+        $self->disengaged(undef);
+    });
+}
+else {
+    $meta->add_method('disengage', sub { shift->disengaged(1) });
+    $meta->add_method('engage', sub { shift->disengaged(undef) });
+}
 
 
 # simple methods that return 1 on success
@@ -98,6 +117,7 @@ foreach (qw/plan done_testing/) {
 
 # simple methods that return 0 on success
 foreach (qw/_print_comment/) {
+    if ($meta->has_method($_)) {
 	$meta->add_around_method_modifier($_, sub {
 		my $orig = shift;
 		my $self = shift;
@@ -105,6 +125,7 @@ foreach (qw/_print_comment/) {
 		return 0 if $self->disengaged;
 		return $self->$orig(@_);
 	});
+    }
 }
 
 
@@ -219,6 +240,10 @@ names of the corresponding non-test methods as values.
 
 If the resultant non-test methods are called from within the
 pacakge, the C<antitest> call must be executed in a C<BEGIN> block.
+
+No guarantees are made about the return value of a method created by
+C<antitest> where the test method emits multiple test results or
+uses C<subtest>.
 
 =cut
 

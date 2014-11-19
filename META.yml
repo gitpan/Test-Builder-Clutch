@@ -1,25 +1,24 @@
 ---
-abstract: 'add a clutch to your testing drivechain'
+abstract: unknown
 author:
-  - 'Fraser Tweedale <frase@frase.id.au>'
+  - unknown
 build_requires:
-  Test::More: 0
+  ExtUtils::MakeMaker: 0
 configure_requires:
-  Module::Build: 0.42
+  ExtUtils::MakeMaker: 0
 dynamic_config: 1
-generated_by: 'Module::Build version 0.4203, CPAN::Meta::Converter version 2.133380'
-license: perl
+generated_by: 'ExtUtils::MakeMaker version 6.6302, CPAN::Meta::Converter version 2.120630'
+license: unknown
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: 1.4
 name: Test-Builder-Clutch
-provides:
-  Test::Builder::Clutch:
-    file: lib/Test/Builder/Clutch.pm
-    version: 0.06
+no_index:
+  directory:
+    - t
+    - inc
 requires:
   Class::MOP: 0
   Test::Builder: 0.98
-resources:
-  license: http://dev.perl.org/licenses/
-version: 0.06
+  Test::More: 0
+version: 0.07

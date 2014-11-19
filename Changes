@@ -1,5 +1,8 @@
 Revision history for Test-Builder-Clutch
 
+0.07    20141119
+        Work with new versions of Test-Simple based on Test::Stream
+
 0.06    20131224
         Fix bad test filename.
 
